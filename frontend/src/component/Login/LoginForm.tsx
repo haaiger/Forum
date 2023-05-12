@@ -1,8 +1,16 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import { Container, Typography, TextField, Button, Grid } from "@mui/material";
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Box,
+} from "@mui/material";
 import { login } from "../../redux/slices/userSlices";
-import { useDispatch } from "react-redux";
-import { ILoginForm } from "../../types/types";
+import { ILoginForm, useAppDispatch } from "../../types/types";
+import { useNavigate } from "react-router-dom";
+import { loginThunk } from "../../redux/thunk/authThunk";
 
 const initialState: ILoginForm = {
   email: "",
@@ -10,20 +18,32 @@ const initialState: ILoginForm = {
 };
 
 export const LoginForm: React.FC = () => {
-  const [formData, setFormData] = useState<ILoginForm>(initialState);
-  const dispatch = useDispatch();
+  const [loginFormData, setLoginFormData] = useState<ILoginForm>(initialState);
+  const [isLoggined, setIsLoggined] = useState<boolean>(false);
+
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const handleFormChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
+    setLoginFormData({
+      ...loginFormData,
       [event.target.name]: event.target.value,
     });
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(login(formData));
-    console.log(formData);
+    dispatch(loginThunk(loginFormData));
+    dispatch(login(loginFormData));
+    setIsLoggined(true);
+    setTimeout(() => {
+      navigate("/home");
+    }, 1500);
+    console.log(loginFormData);
+  };
+
+  const handleRegistration = () => {
+    navigate("/registration");
   };
 
   return (
@@ -38,7 +58,7 @@ export const LoginForm: React.FC = () => {
               name="email"
               label="Email"
               fullWidth
-              value={formData.email}
+              value={loginFormData.email}
               onChange={handleFormChange}
             />
           </Grid>
@@ -48,7 +68,7 @@ export const LoginForm: React.FC = () => {
               label="Password"
               type="password"
               fullWidth
-              value={formData.password}
+              value={loginFormData.password}
               onChange={handleFormChange}
             />
           </Grid>
@@ -59,6 +79,21 @@ export const LoginForm: React.FC = () => {
           </Grid>
         </Grid>
       </form>
+      <Grid item xs={12}>
+        <Button
+          onClick={handleRegistration}
+          variant="contained"
+          color="success"
+          fullWidth
+        >
+          Зарегистрироваться
+        </Button>
+      </Grid>
+      {isLoggined && (
+        <Box mt={2} p={2} bgcolor="success.main" color="white">
+          Вы успешно вошли!
+        </Box>
+      )}
     </Container>
   );
 };

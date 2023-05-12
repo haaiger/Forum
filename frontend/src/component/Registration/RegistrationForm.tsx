@@ -1,8 +1,16 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import { Container, Typography, TextField, Button, Grid } from "@mui/material";
-import { useDispatch } from "react-redux";
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Box,
+} from "@mui/material";
 import { registration } from "../../redux/slices/userSlices";
-import { IUser } from "../../types/types";
+import { IUser, useAppDispatch } from "../../types/types";
+import { registrationThunk } from "../../redux/thunk/authThunk";
+import { useNavigate } from "react-router-dom";
 
 const initialState: IUser = {
   firstName: "",
@@ -12,20 +20,34 @@ const initialState: IUser = {
 };
 
 export const RegistrationForm: React.FC = () => {
-  const [formData, setFormData] = useState<IUser>(initialState);
-  const dispatch = useDispatch();
+  const [registrationFormData, setRegistrationFormData] =
+    useState<IUser>(initialState);
+  const [isRegistered, setIsRegistered] = useState<boolean>(false);
+
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const handleFormChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
+    setRegistrationFormData({
+      ...registrationFormData,
       [event.target.name]: event.target.value,
     });
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(registration(formData));
-    console.log(formData);
+    dispatch(registrationThunk(registrationFormData));
+    dispatch(registration(registrationFormData));
+    setIsRegistered(true);
+    setTimeout(() => {
+      setIsRegistered(false);
+      navigate("/home");
+    }, 1500);
+    console.log(registrationFormData);
+  };
+
+  const handleLogin = () => {
+    navigate("/login");
   };
 
   return (
@@ -41,7 +63,7 @@ export const RegistrationForm: React.FC = () => {
               name="firstName"
               label="First Name"
               fullWidth
-              value={formData.firstName}
+              value={registrationFormData.firstName}
               onChange={handleFormChange}
             />
           </Grid>
@@ -51,7 +73,7 @@ export const RegistrationForm: React.FC = () => {
               name="lastName"
               label="Last Name"
               fullWidth
-              value={formData.lastName}
+              value={registrationFormData.lastName}
               onChange={handleFormChange}
             />
           </Grid>
@@ -60,7 +82,7 @@ export const RegistrationForm: React.FC = () => {
               name="email"
               label="Email"
               fullWidth
-              value={formData.email}
+              value={registrationFormData.email}
               onChange={handleFormChange}
             />
           </Grid>
@@ -70,7 +92,7 @@ export const RegistrationForm: React.FC = () => {
               label="Password"
               type="password"
               fullWidth
-              value={formData.password}
+              value={registrationFormData.password}
               onChange={handleFormChange}
             />
           </Grid>
@@ -81,6 +103,21 @@ export const RegistrationForm: React.FC = () => {
           </Grid>
         </Grid>
       </form>
+      <Grid item xs={12}>
+        <Button
+          onClick={handleLogin}
+          variant="contained"
+          color="success"
+          fullWidth
+        >
+          Авторизоваться
+        </Button>
+      </Grid>
+      {isRegistered && (
+        <Box mt={2} p={2} bgcolor="success.main" color="white">
+          Вы успешно вошли!
+        </Box>
+      )}
     </Container>
   );
 };

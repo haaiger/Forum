@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IUserState, ILoginForm, IUser, RootState } from "../../types/types";
+import { registrationThunk } from "../thunk/authThunk";
 
 const initialState: IUserState = {
     user: {
@@ -8,7 +9,8 @@ const initialState: IUserState = {
         email: "",
         password: "",
     },
-    isAuthUser: true,
+    isAuthUser: false,
+    isLoading: false,
 }
 
 const userSlice = createSlice({
@@ -30,6 +32,17 @@ const userSlice = createSlice({
             state.isAuthUser = false;
         },
     },
+    extraReducers: (builder) => {
+        builder
+            .addCase(registrationThunk.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(registrationThunk.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.user = action.payload;
+                state.isAuthUser = true;
+            })
+    }
 })
 
 export const selectUser = (state: RootState) => state.user;
