@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -7,8 +7,7 @@ import {
   Grid,
   Box,
 } from "@mui/material";
-import { login } from "../../redux/slices/userSlices";
-import { ILoginForm, useAppDispatch } from "../../types/types";
+import { ILoginForm, useAppDispatch, useAppSelector } from "../../types/types";
 import { useNavigate } from "react-router-dom";
 import { loginThunk } from "../../redux/thunk/authThunk";
 
@@ -19,7 +18,8 @@ const initialState: ILoginForm = {
 
 export const LoginForm: React.FC = () => {
   const [loginFormData, setLoginFormData] = useState<ILoginForm>(initialState);
-  const [isLoggined, setIsLoggined] = useState<boolean>(false);
+  const errorMessage = useAppSelector((state) => state.user.isErrorLogin);
+  const isAuthUser = useAppSelector((state) => state.user.isAuthUser);
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -31,15 +31,14 @@ export const LoginForm: React.FC = () => {
     });
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(loginThunk(loginFormData));
-    dispatch(login(loginFormData));
-    setIsLoggined(true);
-    setTimeout(() => {
-      navigate("/home");
-    }, 1500);
-    console.log(loginFormData);
+    try {
+      await dispatch(loginThunk(loginFormData));
+      setTimeout(() => navigate("/home"), 1500);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleRegistration = () => {
@@ -89,9 +88,14 @@ export const LoginForm: React.FC = () => {
           Зарегистрироваться
         </Button>
       </Grid>
-      {isLoggined && (
+      {isAuthUser && (
         <Box mt={2} p={2} bgcolor="success.main" color="white">
-          Вы успешно вошли!
+          Вы успешно вошли, перенаправляем на домашнюю страницу!
+        </Box>
+      )}
+      {errorMessage && (
+        <Box mt={2} p={2} bgcolor="error.main" color="white">
+          Не удалось войти, проверьте введенные данные.
         </Box>
       )}
     </Container>

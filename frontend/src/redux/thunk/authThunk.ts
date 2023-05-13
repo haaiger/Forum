@@ -1,9 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { ILoginForm, IUser } from "../../types/types";
+import { registration, errorRegistration, login, errorLogin } from "../slices/userSlices";
+import { IUser, ILoginForm } from "../../types/types";
 
 export const registrationThunk = createAsyncThunk(
     "user/registration",
-    async (user: IUser) => {
+    async (user: IUser, { dispatch }) => {
         try {
             const response = await fetch("http://localhost:6622/auth/signup", {
                 method: "POST",
@@ -13,6 +14,11 @@ export const registrationThunk = createAsyncThunk(
                 body: JSON.stringify(user),
             });
             const data = await response.json();
+            if (response.ok) {
+                dispatch(registration(data));
+            } else {
+                dispatch(errorRegistration(true));
+            }
             return data;
         } catch (error) {
             console.log(error);
@@ -22,8 +28,8 @@ export const registrationThunk = createAsyncThunk(
 );
 
 export const loginThunk = createAsyncThunk(
-    'user/login',
-    async (user: ILoginForm) => {
+    "user/login",
+    async (user: ILoginForm, { dispatch }) => {
         try {
             const response = await fetch("http://localhost:6622/auth/signin", {
                 method: "POST",
@@ -33,10 +39,15 @@ export const loginThunk = createAsyncThunk(
                 body: JSON.stringify(user),
             });
             const data = await response.json();
+            if (response.ok) {
+                dispatch(login(data));
+            } else {
+                dispatch(errorLogin(true));
+            }
             return data;
         } catch (error) {
             console.log(error);
-            throw new Error("400");
+            dispatch(errorLogin(true));
         }
     }
 );

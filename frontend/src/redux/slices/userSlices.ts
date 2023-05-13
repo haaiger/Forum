@@ -10,14 +10,17 @@ const initialState: IUserState = {
         password: "",
     },
     isAuthUser: false,
+    isRegUser: false,
     isLoading: false,
+    isErrorRegistration: false,
+    isErrorLogin: false,
 }
 
 const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-        login: (state, action: PayloadAction<ILoginForm>) => {
+        login: (state, action: PayloadAction<ILoginForm>) => {            
             const { email, password } = action.payload;
             state.user.email = email;
             state.user.password = password;
@@ -30,6 +33,12 @@ const userSlice = createSlice({
         logout: (state) => {
             state.user = initialState.user;
             state.isAuthUser = false;
+        },
+        errorRegistration: (state, action) => {
+            state.isErrorRegistration = action.payload;
+        },
+        errorLogin: (state, action) => {
+            state.isErrorLogin = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -46,5 +55,5 @@ const userSlice = createSlice({
 })
 
 export const selectUser = (state: RootState) => state.user;
-export const { login, logout, registration } = userSlice.actions;
+export const { login, logout, registration, errorRegistration, errorLogin } = userSlice.actions;
 export default userSlice.reducer;

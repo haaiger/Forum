@@ -7,8 +7,7 @@ import {
   Grid,
   Box,
 } from "@mui/material";
-import { registration } from "../../redux/slices/userSlices";
-import { IUser, useAppDispatch } from "../../types/types";
+import { IUser, useAppDispatch, useAppSelector } from "../../types/types";
 import { registrationThunk } from "../../redux/thunk/authThunk";
 import { useNavigate } from "react-router-dom";
 
@@ -22,7 +21,7 @@ const initialState: IUser = {
 export const RegistrationForm: React.FC = () => {
   const [registrationFormData, setRegistrationFormData] =
     useState<IUser>(initialState);
-  const [isRegistered, setIsRegistered] = useState<boolean>(false);
+  const isRegUser = useAppSelector((state) => state.user.isRegUser);
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -34,16 +33,14 @@ export const RegistrationForm: React.FC = () => {
     });
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(registrationThunk(registrationFormData));
-    dispatch(registration(registrationFormData));
-    setIsRegistered(true);
-    setTimeout(() => {
-      setIsRegistered(false);
-      navigate("/home");
-    }, 1500);
-    console.log(registrationFormData);
+    try {
+      await dispatch(registrationThunk(registrationFormData));
+      setTimeout(() => navigate("/home"), 1500);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleLogin = () => {
@@ -98,7 +95,7 @@ export const RegistrationForm: React.FC = () => {
           </Grid>
           <Grid item xs={12}>
             <Button type="submit" variant="contained" color="primary" fullWidth>
-              Sign Up
+              Зарегистрироваться
             </Button>
           </Grid>
         </Grid>
@@ -113,7 +110,7 @@ export const RegistrationForm: React.FC = () => {
           Авторизоваться
         </Button>
       </Grid>
-      {isRegistered && (
+      {isRegUser && (
         <Box mt={2} p={2} bgcolor="success.main" color="white">
           Вы успешно вошли!
         </Box>
